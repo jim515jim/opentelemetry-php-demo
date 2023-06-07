@@ -1,0 +1,12 @@
+{"require": {
+        "slim/slim": "^4.11",
+                "slim/psr7": "^1.6",
+                "selective/basepath": "^2.1",
+                "open-telemetry/exporter-zipkin": "^1.0@beta",
+                "symfony/http-client": "^6.3",
+                "guzzlehttp/promises": "^2.0",
+                "php-http/discovery": "^1.18",
+                "psr/http-client-implementation": "*",
+                "php-http/guzzle7-adapter": "^1.0",
+                "open-telemetry/sdk": "^1.0@beta"
+    }, "minimum-stability": "beta", "config": {"allow-plugins": {"php-http/discovery": true}}}

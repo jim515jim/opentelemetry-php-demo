@@ -1,0 +1,19 @@
+version: '3'
+services:
+  php:
+    build:
+      context: .
+    ports:
+      - 8080:80
+    volumes:
+      - ./:/var/www/html
+    networks:
+      - opentelemetry
+  zipkin:
+    image: openzipkin/zipkin
+    ports:
+      - 9411:9411
+    networks:
+      - opentelemetry
+networks:
+  opentelemetry:
