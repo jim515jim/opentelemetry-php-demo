@@ -1,0 +1,17 @@
+receivers:
+  zipkin:
+    endpoint: "0.0.0.0:9411"
+
+processors:
+  batch:
+
+exporters:
+  zipkin:
+    endpoint: "http://zipkin:9411/api/v2/spans"
+
+service:
+  pipelines:
+    traces:
+      receivers: [zipkin]
+      processors: [batch]
+      exporters: [zipkin]
