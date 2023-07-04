@@ -9,8 +9,6 @@ services:
           - .:/var/www/html
         ports:
           - "80:8000"
-        depends_on:
-          - database
         networks:
           - opentelemetry
 
@@ -20,6 +18,31 @@ services:
           - "9411:9411"
         networks:
           - opentelemetry
+    jaeger:
+        image: jaegertracing/all-in-one
+        environment:
+            COLLECTOR_ZIPKIN_HOST_PORT: 9412
+        ports:
+            - 9412:9412
+            - 16686:16686
+        networks:
+            - opentelemetry
+    collector:
+        image: otel/opentelemetry-collector-contrib
+        command: [ "--config=/etc/otel-collector-config.yml" ]
+        volumes:
+            - ./files/collector/otel-collector-config.yml:/etc/otel-collector-config.yml
+        ports:
+            - "1888:1888"   # pprof extension
+            - "8888:8888"   # Prometheus metrics exposed by the collector
+            - "8889:8889"   # Prometheus exporter metrics
+            - "13133:13133" # health_check extension
+            - "9411"   # Zipkin receiver
+            - "4317:4317"        # OTLP gRPC receiver
+            - "4318:4318" # OTLP/HTTP receiver
+            - "55680:55679" # zpages extension
+        networks:
+            - opentelemetry
 
 networks:
   opentelemetry:
