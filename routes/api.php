@@ -19,10 +19,6 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-Route::get('/hello', function () {
-    return "Hello World!";
-});
-
 // 訂單管理
 // 新增訂單
 Route::post('/order', [OrderController::class, 'store']);
@@ -35,6 +31,6 @@ Route::post('/order/{id}/cancel', [OrderController::class, 'cancel']);
 
 // 物流管理
 // 新增物流編號
-Route::post('/order/{id}/ship', 'OrderController@ship');
+Route::post('/order/{id}/ship', [OrderController::class, 'ship']);
 // 取消物流
-Route::post('/order/{id}/cancel_shipment', 'OrderController@cancelShipment');
+Route::post('/order/{id}/cancel_shipment', [OrderController::class, 'cancelShipment']);
