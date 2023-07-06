@@ -16,13 +16,16 @@ class OrderController extends Controller
         Measure::start('store_order');
         //資料寫入遙測
         Measure::start('save_order');
-//        $order->save();
-      //  usleep(5000000);
+        // $order->save();
+      // usleep(5000000);
         //資料寫入遙測結束
         Measure::stop('save_order');
         Measure::start('save_order1');
 //        $order->save();
-       // usleep(5000000);
+ 
+        dump((string)\Illuminate\Support\Facades\Http::withTrace()->get('https://httpbin.org/get'));
+//https://httpbin.org/get
+       // usleep(1000000);
         //資料寫入遙測結束
         Measure::stop('save_order1');
         //遙測結束
