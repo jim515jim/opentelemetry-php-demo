@@ -12,26 +12,25 @@ services:
         networks:
           - opentelemetry
 
-    zipkin:
-        image: openzipkin/zipkin
-        ports:
-          - "9411:9411"
-        networks:
+    # To eventually offload to Tempo...
+    tempo:
+      image: grafana/tempo:latest
+      command: [ "-config.file=/etc/tempo.yaml" ]
+      volumes:
+        - ./tempo/tempo.yaml:/etc/tempo.yaml
+      ports:
+        - "14268"  # jaeger ingest
+        - "3200:3200"   # tempo
+        - "4317"  # otlp grpc
+        - "4318"  # otlp http
+      networks:
           - opentelemetry
-    jaeger:
-        image: jaegertracing/all-in-one
-        environment:
-            COLLECTOR_ZIPKIN_HOST_PORT: 9412
-        ports:
-            - 9412:9412
-            - 16686:16686
-        networks:
-            - opentelemetry
+
     collector:
         image: otel/opentelemetry-collector-contrib
         command: [ "--config=/etc/otel-collector-config.yml" ]
         volumes:
-            - ./files/collector/otel-collector-config.yml:/etc/otel-collector-config.yml
+            - ./src/otelcollector/otelcol-config.yml:/etc/otel-collector-config.yml
         ports:
             - "1888:1888"   # pprof extension
             - "8888:8888"   # Prometheus metrics exposed by the collector
@@ -43,6 +42,19 @@ services:
             - "55680:55679" # zpages extension
         networks:
             - opentelemetry
+
+
+    grafana:
+      image: grafana/grafana:9.4.3
+      environment:
+        - GF_AUTH_ANONYMOUS_ENABLED=true
+        - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+        - GF_AUTH_DISABLE_LOGIN_FORM=true
+        - GF_FEATURE_TOGGLES_ENABLE=traceqlEditor
+      ports:
+        - "3000:3000"
+      networks:
+          - opentelemetry
 
 networks:
   opentelemetry:

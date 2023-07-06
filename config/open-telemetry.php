@@ -13,7 +13,7 @@ return [
      */
     'drivers' => [
         Spatie\OpenTelemetry\Drivers\HttpDriver::class => [
-            'url' => 'http://zipkin:9411/api/v2/spans',
+            'url' => 'http://collector:9411/api/v2/spans',
         ],
     ],
 
