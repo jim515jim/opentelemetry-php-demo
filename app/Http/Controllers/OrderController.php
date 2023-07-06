@@ -17,12 +17,12 @@ class OrderController extends Controller
         //資料寫入遙測
         Measure::start('save_order');
 //        $order->save();
-        usleep(5000000);
+      //  usleep(5000000);
         //資料寫入遙測結束
         Measure::stop('save_order');
         Measure::start('save_order1');
 //        $order->save();
-        usleep(5000000);
+       // usleep(5000000);
         //資料寫入遙測結束
         Measure::stop('save_order1');
         //遙測結束
