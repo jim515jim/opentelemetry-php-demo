@@ -2,7 +2,10 @@
 
 namespace App\Providers;
 
+use Illuminate\Log\LogManager;
 use Illuminate\Support\ServiceProvider;
+use Monolog\LogRecord;
+use Monolog\Processor\ProcessorInterface;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -13,12 +16,12 @@ class AppServiceProvider extends ServiceProvider
     {
         // log resolver
         $this->app->afterResolving('log', function (LogManager $log) {
+
             $processor = new class implements ProcessorInterface
             {
                 public function __invoke(LogRecord $record)
                 {
-                    // TODO impletemet for get trace id from context
-                    $record->extra['traceId'] = 'aaaa';
+                    $record->extra['traceId'] = 'aaaaa';
         
                     return $record;
                 }
@@ -26,6 +29,9 @@ class AppServiceProvider extends ServiceProvider
         
             $log->pushProcessor($processor);
         });
+        
+        $this->app->forgetInstance('log');
+        \Log::clearResolvedInstance('log');
     }
 
     /**
