@@ -13,6 +13,7 @@ class OrderController extends Controller
 {
     public function store(Request $request): JsonResponse
     {
+        \Log::info('test');
         Measure::start('store_order');
         //資料寫入遙測
         Measure::start('save_order');
