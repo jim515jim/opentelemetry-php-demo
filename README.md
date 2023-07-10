@@ -22,3 +22,5 @@ creat .env key
 ```shell
 docker run --rm -v $(pwd):/app -w /app php:8.1-fpm php artisan key:generate
 ```
+
+{job="fluentbit"} | json | line_format "{{.log}}" | regexp "(?P<DockerLevel>\\w+)  (?P<AppLog>.*)\\." 

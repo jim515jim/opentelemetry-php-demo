@@ -72,12 +72,14 @@ services:
 
 
     grafana:
-      image: grafana/grafana:9.4.3
+      image: grafana/grafana:latest
       environment:
         - GF_AUTH_ANONYMOUS_ENABLED=true
         - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
         - GF_AUTH_DISABLE_LOGIN_FORM=true
         - GF_FEATURE_TOGGLES_ENABLE=traceqlEditor
+      volumes:
+        - ./src/grafana/provisioning:/etc/grafana/provisioning
       ports:
         - "3000:3000"
       networks:
@@ -90,6 +92,9 @@ services:
         environment:
             - MYSQL_ROOT_PASSWORD=root
             - MYSQL_DATABASE=laravel
+        networks:
+            - opentelemetry
+
 networks:
   opentelemetry:
 
