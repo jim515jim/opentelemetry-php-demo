@@ -3,6 +3,11 @@
 use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Http\Request;
 
+use OpenTelemetry\SDK\Trace\SpanProcessor\SimpleSpanProcessor;
+use OpenTelemetry\SDK\Trace\TracerProvider;
+use OpenTelemetry\SDK\Trace\Sampler\AlwaysOnSampler;
+use OpenTelemetry\SDK\Common\Export\Http\PsrTransportFactory;
+
 define('LARAVEL_START', microtime(true));
 
 /*
@@ -44,6 +49,21 @@ require __DIR__.'/../vendor/autoload.php';
 |
 */
 
+$tracer = (new TracerProvider(
+    [
+        new SimpleSpanProcessor(
+            new OpenTelemetry\Contrib\Zipkin\Exporter(
+                PsrTransportFactory::discover()->create('http://collector:9411/api/v2/spans', 'application/json')
+            ),
+        ),
+    ],
+    new AlwaysOnSampler(),
+))->getTracer('Hello World Laravel Web Server');
+
+$request = Request::createFromGlobals();
+$rootSpan = $tracer->spanBuilder($request->getUri())->startSpan();
+$rootScope = $rootSpan->activate();
+
 $app = require_once __DIR__.'/../bootstrap/app.php';
 
 $kernel = $app->make(Kernel::class);
@@ -53,3 +73,6 @@ $response = tap($kernel->handle(
 ))->send();
 
 $kernel->terminate($request, $response);
+
+$rootScope->detach();
+$rootSpan->end();

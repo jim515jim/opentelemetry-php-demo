@@ -5,32 +5,34 @@ namespace App\Http\Controllers;
 use App\Models\Order;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
-use Spatie\OpenTelemetry\Facades\Measure;
-use Spatie\OpenTelemetry\Support\Trace;
 
 class OrderController extends Controller
 {
     public function store(Request $request): JsonResponse
     {
         \Log::info('test');
-        Measure::start('store_order');
-        //資料寫入遙測
-        Measure::start('save_order');
-        // $order->save();
-      // usleep(5000000);
-        //資料寫入遙測結束
-        Measure::stop('save_order');
-        Measure::start('save_order1');
-//        $order->save();
- 
-        dump((string)\Illuminate\Support\Facades\Http::withTrace()->get('https://httpbin.org/get'));
-//https://httpbin.org/get
-       // usleep(1000000);
-        //資料寫入遙測結束
-        Measure::stop('save_order1');
-        //遙測結束
-        Measure::stop('store_order');
+        $date = date('d/m/Y h:i:s a', time());
+
+        global $tracer, $rootSpan;
+        if ($rootSpan) {
+            $rootSpan->setAttribute('foo', 'bar');
+            $rootSpan->setAttribute('Kishan', 'Sangani');
+            $rootSpan->setAttribute('foo1', 'bar1');
+            $rootSpan->updateName('OrderController\\store dated ' . $date);
+
+            $parent = $tracer->spanBuilder("訂單開始")->startSpan();
+            $scope = $parent->activate();
+            try {
+                $child = $tracer->spanBuilder("訂單寫入")->startSpan();
+                //            $order = new Order();
+                //            $order->fill($request->all());
+                //            $order->save();
+                $child->end();
+            } finally {
+                $parent->end();
+                $scope->detach();
+            }
+        }
 
         // 回傳新增訂單的回應
         return response()->json(['message' => 'Order created successfully']);
@@ -38,25 +40,36 @@ class OrderController extends Controller
 
     public function pay($id): JsonResponse
     {
-        // 在這裡創建uuid
-        Measure::setTraceId('b6d13ec2e184b7170c7ca9b635f3274e');
-        $TraceID = Measure::TraceID();
-        Measure::start('pay_order');
+        $date = date('d/m/Y h:i:s a', time());
+        global $tracer, $rootSpan;
+        $rootSpan->setAttribute('foo', 'bar');
+        $rootSpan->setAttribute('Kishan', 'Sangani');
+        $rootSpan->setAttribute('foo1', 'bar1');
+        $rootSpan->updateName('HelloController\\index dated ' . $date);
 
-        // 在這裡處理支付訂單的邏輯
-        // 根據訂單 ID 從資料庫中獲取相應的訂單
+        $parent = $tracer->spanBuilder("store_order")->startSpan();
+        $scope = $parent->activate();
+        try {
+            $child = $tracer->spanBuilder("save_order")->startSpan();
+            // 在這裡處理支付訂單的邏輯
+            // 根據訂單 ID 從資料庫中獲取相應的訂單
 //        $order = Order::find($id);
 //
 //        if (!$order) {
 //            return response()->json(['message' => 'Order not found'], 404);
 //        }
+            // 處理支付邏輯
+            //
 
-        // 處理支付邏輯
-        // ...
-        Measure::stop('pay_order');
+
+            $child->end();
+        } finally {
+            $parent->end();
+            $scope->detach();
+        }
 
         // 回傳支付訂單的回應
-        return response()->json(['message' => 'Order paid successfully', 'TraceID' => $TraceID]);
+        return response()->json(['message' => 'Order paid successfully']);
     }
 
     public function cancel($id): JsonResponse
@@ -76,32 +89,21 @@ class OrderController extends Controller
         return response()->json(['message' => 'Order canceled successfully', 'order' => $order]);
     }
 
-//    public function store(Request $request): JsonResponse
-//    {
-//        // 在這裡創建uuid
-//        $uuid = Str::uuid()->toString();
-//        //遙測開始
-//        Measure::startTrace();
-//        $traceID = Measure::TraceID();
-//        Measure::start('store_order')->tags([
-//            'uuid' => $uuid,
-//        ]);
-//        // 建立新的訂單並保存到資料庫
-//        $order = new Order();
-//        // 設定訂單資料
-//        $order->uuid = $uuid;
-//        $order->name = $request->input('name');
-//        $order->amount = $request->input('amount');
-//
-//        //資料寫入遙測
-//        Measure::start('save_order');
-////        $order->save();
-//        //資料寫入遙測結束
-//        Measure::stop('save_order');
-//        //遙測結束
-//        Measure::stop('store_order');
-//
-//        // 回傳新增訂單的回應
-//        return response()->json(['message' => 'Order created successfully', 'order' => $order, 'TraceID' => $traceID]);
-//    }
+    public function ship($id): JsonResponse
+    {
+        // 在這裡處理貨運
+        // 根據訂單 ID 從資料庫中獲取相應的訂單
+        $order = Order::find($id);
+
+        if (!$order) {
+            return response()->json(['message' => 'Order not found'], 404);
+        }
+
+        // 處理邏輯
+
+        // 回傳取消訂單的回應
+        return response()->json(['message' => 'Order canceled successfully', 'order' => $order]);
+    }
+
+
 }
