@@ -22,16 +22,13 @@ class OrderController extends Controller
 
             $parent = $tracer->spanBuilder("訂單開始")->startSpan();
             $scope = $parent->activate();
-            try {
-                $child = $tracer->spanBuilder("訂單寫入")->startSpan();
-                //            $order = new Order();
-                //            $order->fill($request->all());
-                //            $order->save();
-                $child->end();
-            } finally {
-                $parent->end();
-                $scope->detach();
-            }
+            $child = $tracer->spanBuilder("訂單寫入")->startSpan();
+            // $order = new Order();
+            // $order->fill($request->all());
+            // $order->save();
+            $child->end();
+            $parent->end();
+            $scope->detach();
         }
 
         // 回傳新增訂單的回應
@@ -49,8 +46,7 @@ class OrderController extends Controller
 
         $parent = $tracer->spanBuilder("store_order")->startSpan();
         $scope = $parent->activate();
-        try {
-            $child = $tracer->spanBuilder("save_order")->startSpan();
+        $child = $tracer->spanBuilder("save_order")->startSpan();
             // 在這裡處理支付訂單的邏輯
             // 根據訂單 ID 從資料庫中獲取相應的訂單
 //        $order = Order::find($id);
@@ -60,13 +56,9 @@ class OrderController extends Controller
 //        }
             // 處理支付邏輯
             //
-
-
-            $child->end();
-        } finally {
-            $parent->end();
-            $scope->detach();
-        }
+        $child->end();
+        $parent->end();
+        $scope->detach();
 
         // 回傳支付訂單的回應
         return response()->json(['message' => 'Order paid successfully']);
