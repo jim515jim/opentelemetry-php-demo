@@ -22,3 +22,18 @@ creat .env key
 ```shell
 docker run --rm -v $(pwd):/app -w /app php:8.1-fpm php artisan key:generate
 ```
+
+change .env
+```env
+DB_CONNECTION=mysql
+DB_HOST=mysql
+DB_PORT=3306
+DB_DATABASE=laravel
+DB_USERNAME=root
+DB_PASSWORD=root
+```
+
+use migrate
+```
+docker compose exec app php artisan migrate
+```
