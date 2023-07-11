@@ -22,17 +22,24 @@ class OrderController extends Controller
 
             $parent = $tracer->spanBuilder("訂單開始")->startSpan();
             $scope = $parent->activate();
-            $child = $tracer->spanBuilder("訂單寫入")->startSpan();
-            // $order = new Order();
-            // $order->fill($request->all());
-            // $order->save();
-            $child->end();
-            $parent->end();
-            $scope->detach();
+            try {
+                $child = $tracer->spanBuilder("訂單寫入")->startSpan();
+                $child->setAttribute('name', $request->name);
+                $child->setAttribute('amount', $request->amount);
+                $order = new Order([
+                    'name' => $request->name,
+                    'amount' => $request->amount
+                ]);
+                $order->save();
+                $child->end();
+            } finally {
+                $parent->end();
+                $scope->detach();
+            }
         }
 
         // 回傳新增訂單的回應
-        return response()->json(['message' => 'Order created successfully']);
+        return response()->json(['message' => 'Order created successfully', 'order' => $order->id]);
     }
 
     public function pay($id): JsonResponse
@@ -44,24 +51,31 @@ class OrderController extends Controller
         $rootSpan->setAttribute('foo1', 'bar1');
         $rootSpan->updateName('HelloController\\index dated ' . $date);
 
-        $parent = $tracer->spanBuilder("store_order")->startSpan();
+        $parent = $tracer->spanBuilder("支付訂單完整流程")->startSpan();
         $scope = $parent->activate();
-        $child = $tracer->spanBuilder("save_order")->startSpan();
+        try {
+            $child = $tracer->spanBuilder("支付訂單")->startSpan();
             // 在這裡處理支付訂單的邏輯
             // 根據訂單 ID 從資料庫中獲取相應的訂單
-//        $order = Order::find($id);
-//
-//        if (!$order) {
-//            return response()->json(['message' => 'Order not found'], 404);
-//        }
+            $order = Order::find($id);
+
+            if (!$order) {
+                return response()->json(['message' => 'Order not found'], 404);
+            }
             // 處理支付邏輯
-            //
-        $child->end();
-        $parent->end();
-        $scope->detach();
+            $order->pay = 1;
+            $order->save();
+            $child->end();
+            $child = $tracer->spanBuilder("物流")->startSpan();
+            // todo (post api) or (ship function)
+            $child->end();
+        } finally {
+            $parent->end();
+            $scope->detach();
+        }
 
         // 回傳支付訂單的回應
-        return response()->json(['message' => 'Order paid successfully']);
+        return response()->json(['message' => 'Order paid successfully', 'order' => $order->id, 'pay' => 1]);
     }
 
     public function cancel($id): JsonResponse
@@ -78,7 +92,7 @@ class OrderController extends Controller
         // ...
 
         // 回傳取消訂單的回應
-        return response()->json(['message' => 'Order canceled successfully', 'order' => $order]);
+        return response()->json(['message' => 'Order canceled successfully', 'order' => $order->id]);
     }
 
     public function ship($id): JsonResponse
@@ -90,12 +104,9 @@ class OrderController extends Controller
         if (!$order) {
             return response()->json(['message' => 'Order not found'], 404);
         }
-
         // 處理邏輯
 
         // 回傳取消訂單的回應
         return response()->json(['message' => 'Order canceled successfully', 'order' => $order]);
     }
-
-
 }
