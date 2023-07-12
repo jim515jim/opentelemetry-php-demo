@@ -22,7 +22,6 @@ creat .env key
 ```shell
 docker run --rm -v $(pwd):/app -w /app php:8.1-fpm php artisan key:generate
 ```
-
 change .env
 ```env
 DB_CONNECTION=mysql
