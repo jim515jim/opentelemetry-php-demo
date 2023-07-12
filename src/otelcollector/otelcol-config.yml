@@ -36,10 +36,6 @@ service:
       initial_fields:
         service: aaa
   pipelines:
-    logs:
-      receivers: [zipkin]
-      processors: [batch]
-      exporters: [otlp, logging]
     traces:
       receivers: [zipkin]
       processors: [batch]
